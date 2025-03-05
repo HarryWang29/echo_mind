@@ -5,6 +5,7 @@ import (
 	"github.com/HarryWang29/echo_mind/config"
 	"github.com/HarryWang29/echo_mind/internal/domain/contact_person"
 	"github.com/HarryWang29/echo_mind/internal/domain/group"
+	"github.com/HarryWang29/echo_mind/pkg/util"
 )
 
 type App struct {
@@ -26,6 +27,7 @@ func NewApp(w *config.WechatConfig,
 }
 
 func (app *App) Sync() (err error) {
+	defer util.FuncCost(util.FuncName())()
 	err = app.contactPerson.Sync()
 	if err != nil {
 		return fmt.Errorf("contactPerson.Sync(): %w", err)
