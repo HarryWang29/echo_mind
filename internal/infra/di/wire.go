@@ -23,8 +23,7 @@ func InjectAll() (*sync_db.App, error) {
 		repo.Use,
 		account_info.NewAccountInfo,
 		contact_person.NewContactPerson,
-		group.NewContact,
-		group.NewContactPerson,
+		group.New,
 		sync_db.NewApp,
 	)
 	return &sync_db.App{}, nil

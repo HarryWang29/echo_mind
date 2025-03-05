@@ -8,22 +8,19 @@ import (
 )
 
 type App struct {
-	wechat             *config.WechatConfig
-	contactPerson      *contact_person.ContactPerson
-	groupContact       *group.Contact
-	groupContactPerson *group.ContactPerson
+	wechat        *config.WechatConfig
+	contactPerson *contact_person.ContactPerson
+	group         *group.Group
 }
 
 func NewApp(w *config.WechatConfig,
 	cp *contact_person.ContactPerson,
-	gc *group.Contact,
-	gcp *group.ContactPerson,
+	group *group.Group,
 ) (a *App, err error) {
 	a = &App{
-		wechat:             w,
-		contactPerson:      cp,
-		groupContact:       gc,
-		groupContactPerson: gcp,
+		wechat:        w,
+		contactPerson: cp,
+		group:         group,
 	}
 	return a, nil
 }
@@ -34,12 +31,12 @@ func (app *App) Sync() (err error) {
 		return fmt.Errorf("contactPerson.Sync(): %w", err)
 	}
 
-	err = app.groupContact.Sync()
+	err = app.group.SyncContact()
 	if err != nil {
 		return fmt.Errorf("groupContact.Sync(): %w", err)
 	}
 
-	err = app.groupContactPerson.Sync()
+	err = app.group.SyncContactPerson()
 	if err != nil {
 		return fmt.Errorf("groupContactPerson.Sync(): %w", err)
 	}

@@ -1,65 +1,19 @@
 package group
 
 import (
-	"context"
 	"fmt"
-	"github.com/HarryWang29/echo_mind/config"
-	"github.com/HarryWang29/echo_mind/internal/domain/account_info"
 	"github.com/HarryWang29/echo_mind/internal/infra/db/model"
-	"github.com/HarryWang29/echo_mind/internal/infra/db/repo"
-	"github.com/HarryWang29/echo_mind/internal/infra/db/sqlite"
-	"github.com/HarryWang29/echo_mind/internal/infra/db/sqlite/group"
 	"github.com/HarryWang29/echo_mind/pkg/util"
 	"gorm.io/gorm/clause"
-	"path"
 )
 
-type Contact struct {
-	groupContactDo repo.IGroupContactDo
-	accountInfo    *account_info.AccountInfo
-	wechat         *config.WechatConfig
-	sqlInfo        []*sqliteInfo
-}
-
-type sqliteInfo struct {
-	query                *group.Query
-	groupContactDo       group.IGroupContactDo
-	groupContactPersonDo group.IGroupMemberDo
-	id                   string
-	hash                 string
-}
-
-const dbName = "group_new.db"
-
-func NewContact(w *config.WechatConfig, q *repo.Query, acc *account_info.AccountInfo) (c *Contact, err error) {
-	c = &Contact{
-		groupContactDo: q.GroupContact.WithContext(context.Background()),
-		accountInfo:    acc,
-		wechat:         w,
-	}
-	for _, info := range w.WatchInfo {
-		db, err := sqlite.NewSQLite(w.Key, path.Join(info.Path, "Group"), dbName)
-		if err != nil {
-			return nil, err
-		}
-		query := group.Use(db.DB())
-		c.sqlInfo = append(c.sqlInfo, &sqliteInfo{
-			query:          query,
-			groupContactDo: query.GroupContact.WithContext(context.Background()),
-			id:             info.Id,
-			hash:           info.Hash,
-		})
-	}
-	return c, nil
-}
-
-func (c *Contact) Sync() error {
+func (c *Group) SyncContact() error {
 	for _, info := range c.sqlInfo {
 		account, err := c.accountInfo.FindByHash(info.hash)
 		if err != nil {
 			return fmt.Errorf("find account(%s) info by hash: %w", info.hash, err)
 		}
-		err = c.SyncContact(account.ID, info)
+		err = c.syncContact(account.ID, info)
 		if err != nil {
 			return fmt.Errorf("sync account(%s) contact person: %w", info.hash, err)
 		}
@@ -67,7 +21,7 @@ func (c *Contact) Sync() error {
 	return nil
 }
 
-func (c *Contact) SyncContact(accId int64, info *sqliteInfo) error {
+func (c *Group) syncContact(accId int64, info *sqliteInfo) error {
 	contacts, err := info.groupContactDo.Find()
 	if err != nil {
 		return fmt.Errorf("accountId(%d) groupContactDo.Find(): %w", accId, err)

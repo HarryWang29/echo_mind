@@ -35,11 +35,11 @@ func InjectAll() (*sync_db.App, error) {
 	if err != nil {
 		return nil, err
 	}
-	contact, err := group.NewContact(wechatConfig, query, accountInfo)
+	groupGroup, err := group.New(wechatConfig, query, accountInfo)
 	if err != nil {
 		return nil, err
 	}
-	app, err := sync_db.NewApp(wechatConfig, contactPerson, contact)
+	app, err := sync_db.NewApp(wechatConfig, contactPerson, groupGroup)
 	if err != nil {
 		return nil, err
 	}
