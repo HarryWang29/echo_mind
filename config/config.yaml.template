@@ -1,0 +1,10 @@
+data_source:
+  driver: "mysql"
+  dsn: "root:xxxxx@tcp(127.0.0.1:9005)/echo_mind?charset=utf8mb4&parseTime=True&loc=Local"
+
+wechat:
+  key: "xxxxxx"
+  watch_dir:
+    - "5700a8"
+  watch_id:
+    - "wxid_xxxxxx"
