@@ -40,5 +40,10 @@ func (app *App) Sync() (err error) {
 	if err != nil {
 		return fmt.Errorf("groupContactPerson.Sync(): %w", err)
 	}
+
+	err = app.group.SyncUserRelation()
+	if err != nil {
+		return fmt.Errorf("groupContactPerson.Sync(): %w", err)
+	}
 	return nil
 }
