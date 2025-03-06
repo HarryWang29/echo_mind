@@ -48,6 +48,9 @@ func genSqliteSource(cfg *config.Config) {
 	genSqlite(path.Join(outPath, "group"), wc.Key, path.Join(wc.WatchInfo[0].Path, "Group"), "group_new.db",
 		"GroupContact", "GroupMember", "GroupUserRelation",
 	)
+	genSqlite(path.Join(outPath, "session"), wc.Key, path.Join(wc.WatchInfo[0].Path, "Session"), "session_new.db",
+		"SessionAbstract", "SessionAbstractBrand",
+	)
 }
 
 func genSqlite(outPath, key, dbPath, dbName string, tables ...string) {
