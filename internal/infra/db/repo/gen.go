@@ -16,13 +16,15 @@ import (
 )
 
 var (
-	Q                  = new(Query)
-	AccountInfo        *accountInfo
-	ContactPerson      *contactPerson
-	GroupContact       *groupContact
-	GroupContactPerson *groupContactPerson
-	GroupUserRelation  *groupUserRelation
-	Message            *message
+	Q                    = new(Query)
+	AccountInfo          *accountInfo
+	ContactPerson        *contactPerson
+	GroupContact         *groupContact
+	GroupContactPerson   *groupContactPerson
+	GroupUserRelation    *groupUserRelation
+	Message              *message
+	SessionAbstract      *sessionAbstract
+	SessionAbstractBrand *sessionAbstractBrand
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
@@ -33,42 +35,50 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	GroupContactPerson = &Q.GroupContactPerson
 	GroupUserRelation = &Q.GroupUserRelation
 	Message = &Q.Message
+	SessionAbstract = &Q.SessionAbstract
+	SessionAbstractBrand = &Q.SessionAbstractBrand
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:                 db,
-		AccountInfo:        newAccountInfo(db, opts...),
-		ContactPerson:      newContactPerson(db, opts...),
-		GroupContact:       newGroupContact(db, opts...),
-		GroupContactPerson: newGroupContactPerson(db, opts...),
-		GroupUserRelation:  newGroupUserRelation(db, opts...),
-		Message:            newMessage(db, opts...),
+		db:                   db,
+		AccountInfo:          newAccountInfo(db, opts...),
+		ContactPerson:        newContactPerson(db, opts...),
+		GroupContact:         newGroupContact(db, opts...),
+		GroupContactPerson:   newGroupContactPerson(db, opts...),
+		GroupUserRelation:    newGroupUserRelation(db, opts...),
+		Message:              newMessage(db, opts...),
+		SessionAbstract:      newSessionAbstract(db, opts...),
+		SessionAbstractBrand: newSessionAbstractBrand(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	AccountInfo        accountInfo
-	ContactPerson      contactPerson
-	GroupContact       groupContact
-	GroupContactPerson groupContactPerson
-	GroupUserRelation  groupUserRelation
-	Message            message
+	AccountInfo          accountInfo
+	ContactPerson        contactPerson
+	GroupContact         groupContact
+	GroupContactPerson   groupContactPerson
+	GroupUserRelation    groupUserRelation
+	Message              message
+	SessionAbstract      sessionAbstract
+	SessionAbstractBrand sessionAbstractBrand
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:                 db,
-		AccountInfo:        q.AccountInfo.clone(db),
-		ContactPerson:      q.ContactPerson.clone(db),
-		GroupContact:       q.GroupContact.clone(db),
-		GroupContactPerson: q.GroupContactPerson.clone(db),
-		GroupUserRelation:  q.GroupUserRelation.clone(db),
-		Message:            q.Message.clone(db),
+		db:                   db,
+		AccountInfo:          q.AccountInfo.clone(db),
+		ContactPerson:        q.ContactPerson.clone(db),
+		GroupContact:         q.GroupContact.clone(db),
+		GroupContactPerson:   q.GroupContactPerson.clone(db),
+		GroupUserRelation:    q.GroupUserRelation.clone(db),
+		Message:              q.Message.clone(db),
+		SessionAbstract:      q.SessionAbstract.clone(db),
+		SessionAbstractBrand: q.SessionAbstractBrand.clone(db),
 	}
 }
 
@@ -82,33 +92,39 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:                 db,
-		AccountInfo:        q.AccountInfo.replaceDB(db),
-		ContactPerson:      q.ContactPerson.replaceDB(db),
-		GroupContact:       q.GroupContact.replaceDB(db),
-		GroupContactPerson: q.GroupContactPerson.replaceDB(db),
-		GroupUserRelation:  q.GroupUserRelation.replaceDB(db),
-		Message:            q.Message.replaceDB(db),
+		db:                   db,
+		AccountInfo:          q.AccountInfo.replaceDB(db),
+		ContactPerson:        q.ContactPerson.replaceDB(db),
+		GroupContact:         q.GroupContact.replaceDB(db),
+		GroupContactPerson:   q.GroupContactPerson.replaceDB(db),
+		GroupUserRelation:    q.GroupUserRelation.replaceDB(db),
+		Message:              q.Message.replaceDB(db),
+		SessionAbstract:      q.SessionAbstract.replaceDB(db),
+		SessionAbstractBrand: q.SessionAbstractBrand.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	AccountInfo        IAccountInfoDo
-	ContactPerson      IContactPersonDo
-	GroupContact       IGroupContactDo
-	GroupContactPerson IGroupContactPersonDo
-	GroupUserRelation  IGroupUserRelationDo
-	Message            IMessageDo
+	AccountInfo          IAccountInfoDo
+	ContactPerson        IContactPersonDo
+	GroupContact         IGroupContactDo
+	GroupContactPerson   IGroupContactPersonDo
+	GroupUserRelation    IGroupUserRelationDo
+	Message              IMessageDo
+	SessionAbstract      ISessionAbstractDo
+	SessionAbstractBrand ISessionAbstractBrandDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		AccountInfo:        q.AccountInfo.WithContext(ctx),
-		ContactPerson:      q.ContactPerson.WithContext(ctx),
-		GroupContact:       q.GroupContact.WithContext(ctx),
-		GroupContactPerson: q.GroupContactPerson.WithContext(ctx),
-		GroupUserRelation:  q.GroupUserRelation.WithContext(ctx),
-		Message:            q.Message.WithContext(ctx),
+		AccountInfo:          q.AccountInfo.WithContext(ctx),
+		ContactPerson:        q.ContactPerson.WithContext(ctx),
+		GroupContact:         q.GroupContact.WithContext(ctx),
+		GroupContactPerson:   q.GroupContactPerson.WithContext(ctx),
+		GroupUserRelation:    q.GroupUserRelation.WithContext(ctx),
+		Message:              q.Message.WithContext(ctx),
+		SessionAbstract:      q.SessionAbstract.WithContext(ctx),
+		SessionAbstractBrand: q.SessionAbstractBrand.WithContext(ctx),
 	}
 }
 

@@ -5,7 +5,9 @@ import (
 	"github.com/HarryWang29/echo_mind/internal/infra/db/repo"
 	"github.com/HarryWang29/echo_mind/internal/infra/db/sqlite"
 	"gorm.io/gen"
+	"gorm.io/gorm/schema"
 	"path"
+	"regexp"
 )
 
 type Querier interface {
@@ -31,8 +33,10 @@ func genDbSource(cfg *config.Config) {
 	gur := g.GenerateModel("group_user_relation")
 	cp := g.GenerateModel("contact_person")
 	m := g.GenerateModel("message")
+	sa := g.GenerateModel("session_abstract")
+	sab := g.GenerateModel("session_abstract_brand")
 	// Generate basic type-safe DAO API for struct `model.User` following conventions
-	g.ApplyBasic(gc, gcp, cp, gur, m, ai)
+	g.ApplyBasic(gc, gcp, cp, gur, m, ai, sa, sab)
 
 	// Generate Type Safe API with Dynamic SQL defined on Querier interface for `model.User` and `model.Company`
 	g.ApplyInterface(func(Querier) {}, gc, gcp, cp, gur, m, ai)
@@ -51,27 +55,63 @@ func genSqliteSource(cfg *config.Config) {
 	genSqlite(path.Join(outPath, "session"), wc.Key, path.Join(wc.WatchInfo[0].Path, "Session"), "session_new.db",
 		"SessionAbstract", "SessionAbstractBrand",
 	)
+	genSqlite(path.Join(outPath, "message"), wc.Key, path.Join(wc.WatchInfo[0].Path, "Message"), "msg_0.db", "Chat")
+}
+
+type Message struct{}
+
+func (m Message) TableName(namer schema.Namer) string {
+	return "Chat"
 }
 
 func genSqlite(outPath, key, dbPath, dbName string, tables ...string) {
 	if len(tables) == 0 {
 		return
 	}
-	g := gen.NewGenerator(gen.Config{
+	cfg := gen.Config{
 		OutPath: outPath,
 		Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface, // generate mode
+	}
+	cfg.WithFileNameStrategy(func(tableName string) (fileName string) {
+		pattern := `^Chat_[A-Za-z0-9]+$`
+		re := regexp.MustCompile(pattern)
+		if re.MatchString(tableName) {
+			return "message"
+		}
+		return tableName
 	})
+	g := gen.NewGenerator(cfg)
 
 	db, err := sqlite.NewSQLite(key, dbPath, dbName)
 	if err != nil {
 		panic(err)
 	}
 	g.UseDB(db.DB()) // reuse your gorm db
-	todo := make([]interface{}, len(tables))
+	todo := make([]interface{}, 0, len(tables))
 
-	for i, table := range tables {
-		t := g.GenerateModel(table)
-		todo[i] = t
+	if tables[0] == "Chat" {
+		tableList, err := db.DB().Migrator().GetTables()
+		if err != nil {
+			panic(err)
+		}
+		pattern := `^Chat_[A-Za-z0-9]+$`
+		re := regexp.MustCompile(pattern)
+		for _, table := range tableList {
+			if re.MatchString(table) {
+				t := g.GenerateModelAs(table, "Message", gen.WithMethod(Message{}.TableName))
+				todo = append(todo, t)
+				break
+			}
+		}
+
+	} else {
+		for _, table := range tables {
+			t := g.GenerateModel(table)
+			todo = append(todo, t)
+		}
+	}
+	if len(todo) == 0 {
+		return
 	}
 	// Generate basic type-safe DAO API for struct `model.User` following conventions
 	g.ApplyBasic(todo...)
