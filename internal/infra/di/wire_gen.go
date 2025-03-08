@@ -10,8 +10,6 @@ import (
 	"github.com/HarryWang29/echo_mind/config"
 	"github.com/HarryWang29/echo_mind/internal/application/sync"
 	"github.com/HarryWang29/echo_mind/internal/domain/account_info"
-	"github.com/HarryWang29/echo_mind/internal/domain/contact_person"
-	"github.com/HarryWang29/echo_mind/internal/domain/group"
 	"github.com/HarryWang29/echo_mind/internal/infra/db/repo"
 )
 
@@ -31,15 +29,7 @@ func InjectAll() (*sync_db.App, error) {
 	if err != nil {
 		return nil, err
 	}
-	contactPerson, err := contact_person.NewContactPerson(wechatConfig, query, accountInfo)
-	if err != nil {
-		return nil, err
-	}
-	groupGroup, err := group.New(wechatConfig, query, accountInfo)
-	if err != nil {
-		return nil, err
-	}
-	app, err := sync_db.NewApp(wechatConfig, contactPerson, groupGroup)
+	app, err := sync_db.NewApp(wechatConfig, query, accountInfo)
 	if err != nil {
 		return nil, err
 	}

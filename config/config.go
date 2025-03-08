@@ -22,9 +22,14 @@ type DataSourceConfig struct {
 }
 
 type WechatConfig struct {
-	Key      string   `yaml:"key"`
-	WatchDir []string `yaml:"watch_dir"`
-	WatchID  []string `yaml:"watch_id"`
+	WatchDir []struct {
+		Dir string `yaml:"dir"`
+		Key string `yaml:"key"`
+	} `yaml:"watch_dir"`
+	WatchID []struct {
+		Id  string `yaml:"id"`
+		Key string `yaml:"key"`
+	} `yaml:"watch_id"`
 
 	Path      string            `yaml:"-"`
 	WatchInfo []WechatWatchInfo `yaml:"-"`
@@ -33,6 +38,7 @@ type WechatWatchInfo struct {
 	Hash string `yaml:"-"`
 	Id   string `yaml:"-"`
 	Path string `yaml:"-"`
+	Key  string `yaml:"-"`
 }
 
 func NewConfig() *Config {
@@ -53,18 +59,19 @@ func GetWechatConfig(cfg *Config) *WechatConfig {
 	cfg.Wechat.Path = path.Join(dir, "Library", "Containers", "com.tencent.xinWeChat", "Data", "Library", "Application Support", "com.tencent.xinWeChat", "2.0b4.0.9")
 	dirs := make(map[string]string)
 	for _, v := range cfg.Wechat.WatchDir {
-		dirs[v] = ""
+		dirs[v.Dir] = v.Key
 	}
 	for _, v := range cfg.Wechat.WatchID {
-		hex := util.HashHex(util.MD5, v)
-		dirs[hex] = v
+		hex := util.HashHex(util.MD5, v.Id)
+		dirs[hex] = v.Key
 	}
 	cfg.Wechat.WatchInfo = make([]WechatWatchInfo, 0, len(dirs))
 	for k, v := range dirs {
 		cfg.Wechat.WatchInfo = append(cfg.Wechat.WatchInfo, WechatWatchInfo{
-			Id:   v,
+			Id:   "",
 			Hash: k,
 			Path: path.Join(cfg.Wechat.Path, k),
+			Key:  v,
 		})
 	}
 	if len(cfg.Wechat.WatchInfo) == 0 {

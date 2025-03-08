@@ -15,8 +15,8 @@ type Group struct {
 	contactPersonDo repo.IGroupContactPersonDo
 	userRelation    repo.IGroupUserRelationDo
 	accountInfo     *account_info.AccountInfo
-	wechat          *config.WechatConfig
-	sqlInfo         []*sqliteInfo
+	wechat          *config.WechatWatchInfo
+	sqlInfo         *sqliteInfo
 }
 type sqliteInfo struct {
 	query           *group.Query
@@ -30,28 +30,25 @@ type sqliteInfo struct {
 
 const dbName = "group_new.db"
 
-func New(w *config.WechatConfig, q *repo.Query, acc *account_info.AccountInfo) (c *Group, err error) {
+func New(w *config.WechatWatchInfo, q *repo.Query) (c *Group, err error) {
 	c = &Group{
 		contactDo:       q.GroupContact.WithContext(context.Background()),
 		contactPersonDo: q.GroupContactPerson.WithContext(context.Background()),
 		userRelation:    q.GroupUserRelation.WithContext(context.Background()),
-		accountInfo:     acc,
 		wechat:          w,
 	}
-	for _, info := range w.WatchInfo {
-		db, err := sqlite.NewSQLite(w.Key, path.Join(info.Path, "Group"), dbName)
-		if err != nil {
-			return nil, err
-		}
-		query := group.Use(db.DB())
-		c.sqlInfo = append(c.sqlInfo, &sqliteInfo{
-			query:           query,
-			contactDo:       query.GroupContact.WithContext(context.Background()),
-			contactPersonDo: query.GroupMember.WithContext(context.Background()),
-			userRelation:    query.GroupUserRelation.WithContext(context.Background()),
-			id:              info.Id,
-			hash:            info.Hash,
-		})
+	db, err := sqlite.NewSQLite(w.Key, path.Join(w.Path, "Group"), dbName)
+	if err != nil {
+		return nil, err
+	}
+	query := group.Use(db.DB())
+	c.sqlInfo = &sqliteInfo{
+		query:           query,
+		contactDo:       query.GroupContact.WithContext(context.Background()),
+		contactPersonDo: query.GroupMember.WithContext(context.Background()),
+		userRelation:    query.GroupUserRelation.WithContext(context.Background()),
+		id:              w.Id,
+		hash:            w.Hash,
 	}
 	return c, nil
 }

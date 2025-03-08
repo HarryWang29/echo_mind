@@ -7,22 +7,16 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func (c *Group) SyncContactPerson() error {
-	for _, info := range c.sqlInfo {
-		account, err := c.accountInfo.FindByHash(info.hash)
-		if err != nil {
-			return fmt.Errorf("find account(%s) info by hash: %w", info.hash, err)
-		}
-		err = c.syncContactPerson(account.ID, info)
-		if err != nil {
-			return fmt.Errorf("sync account(%s) contact person: %w", info.hash, err)
-		}
+func (c *Group) SyncContactPerson(account *model.AccountInfo) error {
+	err := c.syncContactPerson(account.ID)
+	if err != nil {
+		return fmt.Errorf("sync account(%s) contact person: %w", c.sqlInfo.hash, err)
 	}
 	return nil
 }
 
-func (c *Group) syncContactPerson(accId int64, info *sqliteInfo) error {
-	members, err := info.contactPersonDo.Find()
+func (c *Group) syncContactPerson(accId int64) error {
+	members, err := c.sqlInfo.contactPersonDo.Find()
 	if err != nil {
 		return fmt.Errorf("accountId(%d) contactPersonDo.Find(): %w", accId, err)
 	}
