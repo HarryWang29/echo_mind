@@ -29,7 +29,7 @@ func newMessage(db *gorm.DB, opts ...gen.DOOption) message {
 	tableName := _message.messageDo.TableName()
 	_message.ALL = field.NewAsterisk(tableName)
 	_message.MesLocalID = field.NewInt32(tableName, "mesLocalID")
-	_message.MesSvrID = field.NewInt32(tableName, "mesSvrID")
+	_message.MesSvrID = field.NewInt64(tableName, "mesSvrID")
 	_message.MsgCreateTime = field.NewInt32(tableName, "msgCreateTime")
 	_message.MsgContent = field.NewString(tableName, "msgContent")
 	_message.MsgStatus = field.NewInt32(tableName, "msgStatus")
@@ -56,7 +56,7 @@ type message struct {
 
 	ALL             field.Asterisk
 	MesLocalID      field.Int32
-	MesSvrID        field.Int32
+	MesSvrID        field.Int64
 	MsgCreateTime   field.Int32
 	MsgContent      field.String
 	MsgStatus       field.Int32
@@ -89,7 +89,7 @@ func (m message) As(alias string) *message {
 func (m *message) updateTableName(table string) *message {
 	m.ALL = field.NewAsterisk(table)
 	m.MesLocalID = field.NewInt32(table, "mesLocalID")
-	m.MesSvrID = field.NewInt32(table, "mesSvrID")
+	m.MesSvrID = field.NewInt64(table, "mesSvrID")
 	m.MsgCreateTime = field.NewInt32(table, "msgCreateTime")
 	m.MsgContent = field.NewString(table, "msgContent")
 	m.MsgStatus = field.NewInt32(table, "msgStatus")

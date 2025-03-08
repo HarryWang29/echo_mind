@@ -9,7 +9,7 @@ const TableNameMessage = "Chat_c26eca0d2bea3169cfc5b550f4e6b040"
 // Message mapped from table <Chat_c26eca0d2bea3169cfc5b550f4e6b040>
 type Message struct {
 	MesLocalID      int32  `gorm:"column:mesLocalID;primaryKey" json:"mesLocalID"`
-	MesSvrID        int32  `gorm:"column:mesSvrID" json:"mesSvrID"`
+	MesSvrID        int64  `gorm:"column:mesSvrID" json:"mesSvrID"`
 	MsgCreateTime   int32  `gorm:"column:msgCreateTime" json:"msgCreateTime"`
 	MsgContent      string `gorm:"column:msgContent" json:"msgContent"`
 	MsgStatus       int32  `gorm:"column:msgStatus" json:"msgStatus"`

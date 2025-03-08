@@ -46,16 +46,17 @@ func genDbSource(cfg *config.Config) {
 }
 
 func genSqliteSource(cfg *config.Config) {
-	wc := config.GetWechatConfig(cfg)
+	wconfig := config.GetWechatConfig(cfg)
+	wc := wconfig.WatchInfo[0]
 	outPath := "internal/infra/db/sqlite"
-	genSqlite(path.Join(outPath, "contact"), wc.Key, path.Join(wc.WatchInfo[0].Path, "Contact"), "wccontact_new2.db", "WCContact")
-	genSqlite(path.Join(outPath, "group"), wc.Key, path.Join(wc.WatchInfo[0].Path, "Group"), "group_new.db",
+	genSqlite(path.Join(outPath, "contact"), wc.Key, path.Join(wc.Path, "Contact"), "wccontact_new2.db", "WCContact")
+	genSqlite(path.Join(outPath, "group"), wc.Key, path.Join(wc.Path, "Group"), "group_new.db",
 		"GroupContact", "GroupMember", "GroupUserRelation",
 	)
-	genSqlite(path.Join(outPath, "session"), wc.Key, path.Join(wc.WatchInfo[0].Path, "Session"), "session_new.db",
+	genSqlite(path.Join(outPath, "session"), wc.Key, path.Join(wc.Path, "Session"), "session_new.db",
 		"SessionAbstract", "SessionAbstractBrand",
 	)
-	genSqlite(path.Join(outPath, "message"), wc.Key, path.Join(wc.WatchInfo[0].Path, "Message"), "msg_0.db", "Chat")
+	genSqlite(path.Join(outPath, "message"), wc.Key, path.Join(wc.Path, "Message"), "msg_0.db", "Chat")
 }
 
 type Message struct{}
@@ -98,7 +99,8 @@ func genSqlite(outPath, key, dbPath, dbName string, tables ...string) {
 		re := regexp.MustCompile(pattern)
 		for _, table := range tableList {
 			if re.MatchString(table) {
-				t := g.GenerateModelAs(table, "Message", gen.WithMethod(Message{}.TableName))
+				t := g.GenerateModelAs(table, "Message", gen.WithMethod(Message{}.TableName),
+					gen.FieldGenType("mesSvrID", "Int64"))
 				todo = append(todo, t)
 				break
 			}
