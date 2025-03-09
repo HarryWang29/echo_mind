@@ -33,7 +33,7 @@ func newMessage(db *gorm.DB, opts ...gen.DOOption) message {
 	_message.Hash = field.NewString(tableName, "hash")
 	_message.LocalID = field.NewInt64(tableName, "local_id")
 	_message.SvrID = field.NewInt64(tableName, "svr_id")
-	_message.CreateTime = field.NewString(tableName, "create_time")
+	_message.CreateTime = field.NewInt64(tableName, "create_time")
 	_message.Content = field.NewString(tableName, "content")
 	_message.Translate = field.NewString(tableName, "translate")
 	_message.Status = field.NewInt64(tableName, "status")
@@ -59,7 +59,7 @@ type message struct {
 	Hash        field.String
 	LocalID     field.Int64
 	SvrID       field.Int64  // 服务器id
-	CreateTime  field.String // 消息时间
+	CreateTime  field.Int64  // 消息时间
 	Content     field.String // 正文
 	Translate   field.String
 	Status      field.Int64 // 状态
@@ -91,7 +91,7 @@ func (m *message) updateTableName(table string) *message {
 	m.Hash = field.NewString(table, "hash")
 	m.LocalID = field.NewInt64(table, "local_id")
 	m.SvrID = field.NewInt64(table, "svr_id")
-	m.CreateTime = field.NewString(table, "create_time")
+	m.CreateTime = field.NewInt64(table, "create_time")
 	m.Content = field.NewString(table, "content")
 	m.Translate = field.NewString(table, "translate")
 	m.Status = field.NewInt64(table, "status")

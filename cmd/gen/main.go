@@ -100,7 +100,9 @@ func genSqlite(outPath, key, dbPath, dbName string, tables ...string) {
 		for _, table := range tableList {
 			if re.MatchString(table) {
 				t := g.GenerateModelAs(table, "Message", gen.WithMethod(Message{}.TableName),
-					gen.FieldGenType("mesSvrID", "Int64"))
+					gen.FieldGenType("mesSvrID", "Int64"),
+					gen.FieldType("mesSvrID", "int64"),
+				)
 				todo = append(todo, t)
 				break
 			}

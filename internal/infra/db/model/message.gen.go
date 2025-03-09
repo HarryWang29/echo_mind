@@ -13,7 +13,7 @@ type Message struct {
 	Hash        string `gorm:"column:hash;not null" json:"hash"`
 	LocalID     int64  `gorm:"column:local_id;not null" json:"local_id"`
 	SvrID       int64  `gorm:"column:svr_id;not null;comment:服务器id" json:"svr_id"`          // 服务器id
-	CreateTime  string `gorm:"column:create_time;not null;comment:消息时间" json:"create_time"` // 消息时间
+	CreateTime  int64  `gorm:"column:create_time;not null;comment:消息时间" json:"create_time"` // 消息时间
 	Content     string `gorm:"column:content;not null;comment:正文" json:"content"`           // 正文
 	Translate   string `gorm:"column:translate;not null" json:"translate"`
 	Status      int64  `gorm:"column:status;not null;comment:状态" json:"status"`             // 状态
