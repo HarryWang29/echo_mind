@@ -75,6 +75,9 @@ func (m *Message) syncMsg(account *sourceModel.AccountInfo, name string, last in
             return fmt.Errorf("create msg: %w", err)
         }
         offset += step
+        if len(msgs) < step {
+            break
+        }
     }
     return nil
 }
