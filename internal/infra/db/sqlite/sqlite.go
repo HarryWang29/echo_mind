@@ -24,7 +24,7 @@ func NewSQLite(key, path, dbName string) (s *SQLite, err error) {
 	}
 	dsn := fmt.Sprintf("%s/%s?_pragma_key=x'%s'", s.path, s.dbName, s.key)
 	s.tx, err = gorm.Open(sqlite.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Silent),
+		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("open sqlite: %w", err)

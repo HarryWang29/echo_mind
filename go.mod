@@ -1,6 +1,6 @@
 module github.com/HarryWang29/echo_mind
 
-go 1.23
+go 1.23.0
 
 require (
 	github.com/google/wire v0.6.0
@@ -23,10 +23,11 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-sqlite3 v1.14.22 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
+	github.com/panjf2000/ants/v2 v2.11.2 // indirect
 	github.com/stretchr/testify v1.10.0 // indirect
 	golang.org/x/mod v0.23.0 // indirect
 	golang.org/x/net v0.35.0 // indirect
-	golang.org/x/sync v0.11.0 // indirect
+	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
 	golang.org/x/tools v0.30.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect

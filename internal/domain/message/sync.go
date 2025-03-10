@@ -3,10 +3,11 @@ package message
 import (
 	"fmt"
 	sourceModel "github.com/HarryWang29/echo_mind/internal/infra/db/model"
-	"github.com/HarryWang29/echo_mind/internal/infra/db/repo"
 	localModel "github.com/HarryWang29/echo_mind/internal/infra/db/sqlite/model"
 	"github.com/HarryWang29/echo_mind/pkg/util"
+	"gorm.io/gen"
 	"gorm.io/gorm/clause"
+	"strings"
 )
 
 func (m *Message) Sync(account *sourceModel.AccountInfo) error {
@@ -16,6 +17,9 @@ func (m *Message) Sync(account *sourceModel.AccountInfo) error {
 		return fmt.Errorf("get sessions: %v", err)
 	}
 	for _, session := range sessions {
+		if strings.HasPrefix(session.MNsUserName, "@") {
+			continue
+		}
 		last, err := m.checkSourceLastMsg(account, session)
 		if err != nil {
 			return fmt.Errorf("check source last msg: %w", err)
@@ -27,7 +31,6 @@ func (m *Message) Sync(account *sourceModel.AccountInfo) error {
 		if err != nil {
 			return fmt.Errorf("sync msg: %w", err)
 		}
-		break
 	}
 	return nil
 }
@@ -38,35 +41,39 @@ func (m *Message) syncMsg(account *sourceModel.AccountInfo, name string, last in
 	if !ok {
 		return fmt.Errorf("msg db(%s) not found", hash)
 	}
-	msgs, err := db.do.Where(db.query.Message.MsgCreateTime.Gt(int32(last))).Find()
+	msgs := make([]*localModel.Message, 0)
+	err := db.do.Where(db.query.Message.Table("Chat_"+hash).MsgCreateTime.Gt(int32(last))).
+		FindInBatches(&msgs, 500, func(tx gen.Dao, batch int) error {
+			if len(msgs) == 0 {
+				return nil
+			}
+			todo := make([]*sourceModel.Message, 0, len(msgs))
+			for _, msg := range msgs {
+				todo = append(todo, &sourceModel.Message{
+					AccountID:   account.ID,
+					Hash:        hash,
+					LocalID:     int64(msg.MesLocalID),
+					SvrID:       msg.MesSvrID,
+					CreateTime:  int64(msg.MsgCreateTime),
+					Content:     msg.MsgContent,
+					Status:      int64(msg.MsgStatus),
+					ImgStatus:   int64(msg.MsgImgStatus),
+					MessageType: msg.MessageType,
+					Des:         msg.MesDes == 1,
+					Source:      msg.MsgSource,
+					VoiceText:   msg.MsgVoiceText,
+					Seq:         int64(msg.MsgSeq),
+					DbName:      db.dbName,
+				})
+			}
+			err := m.messageDo.Clauses(clause.OnConflict{UpdateAll: true}).CreateInBatches(todo, 200)
+			if err != nil {
+				return fmt.Errorf("create msg: %w", err)
+			}
+			return nil
+		})
 	if err != nil {
 		return fmt.Errorf("find msg create time: %w", err)
-	}
-	if len(msgs) == 0 {
-		return nil
-	}
-	todo := make([]*sourceModel.Message, 0, len(msgs))
-	for _, msg := range msgs {
-		todo = append(todo, &sourceModel.Message{
-			AccountID:   account.ID,
-			Hash:        hash,
-			LocalID:     int64(msg.MesLocalID),
-			SvrID:       msg.MesSvrID,
-			CreateTime:  int64(msg.MsgCreateTime),
-			Content:     msg.MsgContent,
-			Status:      int64(msg.MsgStatus),
-			ImgStatus:   int64(msg.MsgImgStatus),
-			MessageType: msg.MessageType,
-			Des:         msg.MesDes == 1,
-			Source:      msg.MsgSource,
-			VoiceText:   msg.MsgVoiceText,
-			Seq:         int64(msg.MsgSeq),
-			DbName:      db.dbName,
-		})
-	}
-	err = m.messageDo.Clauses(clause.OnConflict{UpdateAll: true}).CreateInBatches(todo, 2000)
-	if err != nil {
-		return fmt.Errorf("create msg: %w", err)
 	}
 	return nil
 }
@@ -94,7 +101,7 @@ func (m *Message) checkSourceLastMsg(account *sourceModel.AccountInfo, session *
 	lastMessage, err := m.messageDo.Where(
 		m.query.Message.AccountID.Eq(account.ID),
 		m.query.Message.Hash.Eq(util.HashHex(util.MD5, session.MNsUserName)),
-	).Order(repo.Message.CreateTime).Last()
+	).Order(m.query.Message.CreateTime).Last()
 	if err != nil {
 		return 0, fmt.Errorf("get last msg: %w", err)
 	}
