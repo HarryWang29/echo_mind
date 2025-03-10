@@ -15,8 +15,9 @@ func (m *Message) Sync(account *sourceModel.AccountInfo) error {
     if err != nil {
         return fmt.Errorf("get sessions: %v", err)
     }
-    for _, session := range sessions {
-        if strings.HasPrefix(session.MNsUserName, "@") {
+    total := len(sessions)
+    for i, session := range sessions {
+        if strings.HasPrefix(session.MNsUserName, "@") || session.MNsUserName == "brandsessionholder" {
             continue
         }
         last, err := m.checkSourceLastMsg(account, session)
@@ -24,12 +25,14 @@ func (m *Message) Sync(account *sourceModel.AccountInfo) error {
             return fmt.Errorf("check source last msg: %w", err)
         }
         if last == 0 {
+            fmt.Printf("sync table(%02.02f%%): %d/%d\n", float32(i+1)/float32(total)*100, i, total)
             continue
         }
         err = m.syncMsg(account, session.MNsUserName, last)
         if err != nil {
             return fmt.Errorf("sync msg: %w", err)
         }
+        fmt.Printf("sync table(%02.02f%%): %d/%d\n", float32(i+1)/float32(total)*100, i, total)
     }
     return nil
 }
@@ -42,6 +45,11 @@ func (m *Message) syncMsg(account *sourceModel.AccountInfo, name string, last in
     }
     offset := 0
     step := 500
+    total, err := db.do.Where(db.query.Message.Table("Chat_" + hash).MsgCreateTime.Gt(int32(last))).
+        Count()
+    if err != nil {
+        return fmt.Errorf("count msg create time: %w", err)
+    }
     for {
         msgs, err := db.do.Where(db.query.Message.Table("Chat_" + hash).MsgCreateTime.Gt(int32(last))).
             Offset(offset).Limit(step).Find()
@@ -78,6 +86,7 @@ func (m *Message) syncMsg(account *sourceModel.AccountInfo, name string, last in
         if len(msgs) < step {
             break
         }
+        fmt.Printf("sync msg(%02.02f%%): %d/%d\n", float32(offset)/float32(total)*100, offset, total)
     }
     return nil
 }
@@ -105,7 +114,7 @@ func (m *Message) checkSourceLastMsg(account *sourceModel.AccountInfo, session *
     lastMessage, err := m.messageDo.Where(
         m.query.Message.AccountID.Eq(account.ID),
         m.query.Message.Hash.Eq(util.HashHex(util.MD5, session.MNsUserName)),
-    ).Order(m.query.Message.CreateTime).Last()
+    ).Order(m.query.Message.CreateTime.Desc()).Take()
     if err != nil {
         return 0, fmt.Errorf("get last msg: %w", err)
     }
